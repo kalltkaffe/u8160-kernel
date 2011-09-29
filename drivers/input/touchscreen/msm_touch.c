@@ -107,6 +107,17 @@
 
 #define TOUCH_OFFSET    4
 
+//static int32_t msm_tscal_scaler = 65536;
+static int32_t msm_tscal_xscale = 69906;
+static int32_t msm_tscal_xoffset = -4194304;
+static int32_t msm_tscal_yscale = 70933;
+static int32_t msm_tscal_yoffset = -3546654;
+//module_param_named(tscal_scaler, msm_tscal_scaler, int, 0664);
+module_param_named(tscal_xscale, msm_tscal_xscale, int, 0664);
+module_param_named(tscal_xoffset, msm_tscal_xoffset, int, 0664);
+module_param_named(tscal_yscale, msm_tscal_yscale, int, 0664);
+module_param_named(tscal_yoffset, msm_tscal_yoffset, int, 0664);
+
 struct ts {
     struct input_dev *input;
     struct timer_list timer;
@@ -431,6 +442,12 @@ static void ts_update_pen_state(struct ts *ts, int x, int y, int pressure)
 {
     TSSC("{%d, %d}, pressure = %3d\n", x, y, pressure);
     if (pressure) {
+        // Calibrate
+//        x = (x*msm_tscal_xscale + msm_tscal_xoffset + msm_tscal_scaler/2)/msm_tscal_scaler;
+//        y = (y*msm_tscal_yscale + msm_tscal_yoffset + msm_tscal_scaler/2)/msm_tscal_scaler;
+        x = (x*msm_tscal_xscale + msm_tscal_xoffset + 32768)/65536;
+        y = (y*msm_tscal_yscale + msm_tscal_yoffset + 32768)/65536;
+
         input_report_abs(ts->input, ABS_X, x);
         input_report_abs(ts->input, ABS_Y, y);
         input_report_abs(ts->input, ABS_PRESSURE, pressure);
